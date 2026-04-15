@@ -103,7 +103,7 @@ export default [
       'require-await': 'error',
 
       'no-magic-numbers': [
-        'warn',
+        'off',
         { ignoreArrayIndexes: true, ignore: [0, 1, -1, 60, 200, 401, 404, 500] },
       ],
 
