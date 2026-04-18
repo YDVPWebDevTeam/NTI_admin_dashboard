@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 
 import { AuthCard } from '@/src/components/auth/auth-card';
 import { ForceChangePasswordForm } from '@/src/components/auth/force-change-password-form';
+import { AuthStatus } from '@/src/lib/api/auth/types';
 import { ROUTES } from '@/src/lib/constants/routes';
 import { useAuthStore } from '@/src/store/auth-store';
 
@@ -14,7 +15,7 @@ export default function ForceChangePasswordPage() {
   const status = useAuthStore((state) => state.status);
 
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (status === AuthStatus.AUTHENTICATED) {
       router.replace(ROUTES.ROOT);
     }
   }, [router, status]);
