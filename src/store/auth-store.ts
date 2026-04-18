@@ -2,14 +2,14 @@
 
 import { create } from 'zustand';
 import {
+  AuthStatus,
   type AdminLoginRequest,
   type AuthUser,
   type ForceChangePasswordRequest,
+  isAdminRole,
   UserRole,
 } from '@/src/lib/api/auth/types';
 import { authService } from '@/src/lib/api/auth/service';
-
-type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'requires_password_change' | 'anonymous';
 
 interface AuthState {
   user: AuthUser | null;
@@ -17,14 +17,12 @@ interface AuthState {
   isBusy: boolean;
   errorMessage: string | null;
   setErrorMessage: (message: string | null) => void;
-  loginAdmin: (payload: AdminLoginRequest) => Promise<'authenticated' | 'requires_password_change'>;
+  loginAdmin: (
+    payload: AdminLoginRequest,
+  ) => Promise<AuthStatus.AUTHENTICATED | AuthStatus.REQUIRES_PASSWORD_CHANGE>;
   forceChangePassword: (payload: ForceChangePasswordRequest) => Promise<void>;
   logout: () => Promise<void>;
   hasRole: (roles: UserRole[]) => boolean;
-}
-
-function isAdminRole(role?: UserRole): role is UserRole.ADMIN | UserRole.SUPER_ADMIN {
-  return role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN;
 }
 
 function hasRequiredRole(userRole: UserRole, requiredRole: UserRole): boolean {
@@ -37,14 +35,14 @@ function hasRequiredRole(userRole: UserRole, requiredRole: UserRole): boolean {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
-  status: 'idle',
+  status: AuthStatus.IDLE,
   isBusy: false,
   errorMessage: null,
 
   setErrorMessage: (message) => set({ errorMessage: message }),
 
   async loginAdmin(payload) {
-    set({ errorMessage: null, isBusy: true, status: 'loading' });
+    set({ errorMessage: null, isBusy: true, status: AuthStatus.LOADING });
 
     try {
       const response = await authService.loginAdmin(payload);
@@ -52,11 +50,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (response.requiresPasswordChange) {
         set({
           user: null,
-          status: 'requires_password_change',
+          status: AuthStatus.REQUIRES_PASSWORD_CHANGE,
           isBusy: false,
         });
 
-        return 'requires_password_change';
+        return AuthStatus.REQUIRES_PASSWORD_CHANGE;
       }
 
       if (!response.user || !isAdminRole(response.user.role)) {
@@ -65,15 +63,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       set({
         user: response.user,
-        status: 'authenticated',
+        status: AuthStatus.AUTHENTICATED,
         isBusy: false,
       });
 
-      return 'authenticated';
+      return AuthStatus.AUTHENTICATED;
     } catch (error) {
       set({
         user: null,
-        status: 'anonymous',
+        status: AuthStatus.ANONYMOUS,
         errorMessage: error instanceof Error ? error.message : 'Unable to log in.',
         isBusy: false,
       });
@@ -82,7 +80,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   async forceChangePassword(payload) {
-    set({ errorMessage: null, isBusy: true, status: 'loading' });
+    set({ errorMessage: null, isBusy: true, status: AuthStatus.LOADING });
 
     try {
       const response = await authService.forceChangePassword(payload);
@@ -93,13 +91,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       set({
         user: response.user,
-        status: 'authenticated',
+        status: AuthStatus.AUTHENTICATED,
         isBusy: false,
       });
     } catch (error) {
       set({
         user: null,
-        status: 'anonymous',
+        status: AuthStatus.ANONYMOUS,
         errorMessage: error instanceof Error ? error.message : 'Unable to change password.',
         isBusy: false,
       });
@@ -115,7 +113,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } finally {
       set({
         user: null,
-        status: 'anonymous',
+        status: AuthStatus.ANONYMOUS,
         isBusy: false,
       });
     }

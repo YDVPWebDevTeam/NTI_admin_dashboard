@@ -19,6 +19,7 @@ import {
 import { PasswordInput } from '../forms/password-input';
 import { Input } from '@/src/components/shadcn/input';
 import { adminLoginSchema, type AdminLoginSchema } from '@/src/lib/api/auth/schemas';
+import { AuthStatus } from '@/src/lib/api/auth/types';
 import { ROUTES } from '@/src/lib/constants/routes';
 import { useAuthStore } from '@/src/store/auth-store';
 
@@ -41,7 +42,7 @@ export function AdminLoginForm() {
       try {
         const result = await loginAdmin(values);
 
-        if (result === 'requires_password_change') {
+        if (result === AuthStatus.REQUIRES_PASSWORD_CHANGE) {
           toast.info('Password change is required to continue.');
           router.push(ROUTES.FORCE_CHANGE_PASSWORD);
 

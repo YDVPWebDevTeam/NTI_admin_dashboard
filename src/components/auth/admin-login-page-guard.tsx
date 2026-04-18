@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 
 import { ROUTES } from '@/src/lib/constants/routes';
 import { useAdminSessionQuery } from '@/src/lib/api/auth/queries';
-import { UserRole } from '@/src/lib/api/auth/types';
+import { isAdminRole } from '@/src/lib/api/auth/types';
 import { AdminLoginPageContent } from '@/src/components/auth/admin-login-page-content';
 import { useAuthStore } from '@/src/store/auth-store';
 
@@ -14,7 +14,7 @@ export function AdminLoginPageGuard() {
   const localUser = useAuthStore((state) => state.user);
   const { data: session, isLoading } = useAdminSessionQuery();
   const effectiveRole = localUser?.role ?? session?.user?.role;
-  const hasAdminAccess = effectiveRole === UserRole.ADMIN || effectiveRole === UserRole.SUPER_ADMIN;
+  const hasAdminAccess = isAdminRole(effectiveRole);
 
   useEffect(() => {
     if (!isLoading && hasAdminAccess) {

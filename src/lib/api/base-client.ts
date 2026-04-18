@@ -3,11 +3,7 @@ import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import { type ApiResponse } from './types';
 
 const DEFAULT_API_BASE_URL = 'http://localhost:3001/api';
-const API_BASE_URL = (
-  process.env.API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  DEFAULT_API_BASE_URL
-).replace(/\/+$/, '');
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_BASE_URL).replace(/\/+$/, '');
 
 type ApiEnvelope<T> = ApiResponse<T>;
 
